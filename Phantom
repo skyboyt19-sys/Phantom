@@ -1,0 +1,497 @@
+Das ist ein sehr umfangreiches Projekt. Eine App wie Phantom 1:1 nachzubauen erfordert normalerweise tausende Zeilen Code, eine echte Blockchain-Anbindung (Solana), API-Anbindung für Preise, eine Datenbank usw.
+
+Da ich dir hier keinen kompletten App-Store-fertigen Code in einer einzigen Antwort liefern kann, simuliere ich dir das komplette UI (User Interface) in HTML, CSS und JavaScript (React).
+
+Das bedeutet: Du bekommst eine Web-App, die exakt so aussieht wie deine Screenshots (inklusive Dark Mode, Lila-Akzenten, den Menüs, dem Suchfeld und den Tabs). Die Buttons sind klickbar und wechseln die Ansichten, genau wie in der echten App.
+
+Du kannst diesen Code in eine Datei namens index.html packen und im Browser öffnen. Für eine echte Handy-App müsstest du diesen Code in React Native umwandeln.
+
+Der Code (HTML/CSS/JS)
+
+Erstelle eine Datei index.html und füge folgenden Code ein:
+
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phantom Wallet Clone</title>
+    <!-- Einbindung von React und Babel für die UI-Logik -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Icons (Lucide)0 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Grundlegendes Reset & Dunkelmodus */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: #000; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        /* Handy-Rahmen Simulation */
+        #app-container {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #0bb0b;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Scrollbar ausblenden */
+        ::-webkit-scrollbar { display: none; }
+
+        /* Typografie & Farben */
+        .text-gray { color: #8e8e93; }
+        .text-green { color: #30d158; }
+        .text-red { color: #ff453a; }
+        .text-purple { color: #a78bfa; }
+        .text-white { color: #fff; }
+        .font-bold { font-weight: 600; }
+        .text-sm { font-size: 0.85rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-lg { font-size: 1.2rem; }
+        .text-xl { font-size: 1.5rem; }
+        .text-2xl { font-size: 2rem; }
+        
+        /* Layout Utilities */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-4 { gap: 1rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-8 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .p-4 { padding: 1rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .w-full { width: 100%; }
+        .rounded-full { border-radius: 9999px; }
+        .rounded-xl { border-radius: 1rem; }
+
+        /* App-spezifische Komponenten */
+        .status-bar { display: flex; justify-content: space-between; padding: 10px 20px; font-size: 0.8rem; font-weight: 600; }
+        
+        /* Top Navigation */
+        .top-nav { display: flex; gap: 10px; overflow-x: auto; padding: 10px 16px; }
+        .nav-btn { background: #1c1c1e; border: none; color: #8e8e93; padding: 8px 16px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
+        .nav-btn.active { background: #a78bfa; color: #000; }
+
+        /* Bottom Navigation */
+        .bottom-nav { display: flex; justify-content: space-around; padding: 15px 10px 25px 10px; background: #0b0b0b; border-top: 1px solid #1c1c1e; position: absolute; bottom: 0; width: 100%; z-index: 10; }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #8e8e93; font-size: 0.7rem; cursor: pointer; }
+        .bottom-nav-item.active { color: #a78bfa; }
+
+        /* Suchleiste */
+        .search-bar { background: #1c1c1e; border-radius: 12px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; margin: 0 16px 16px 16px; }
+        .search-bar input { background: transparent; border: none; color: #fff; outline: none; flex-grow: 1; font-size: 0.95rem; }
+
+        /* Cards & Listen */
+        .card { background: #1c1c1e; border-radius: 16px; padding: 16px; margin: 0 16px 12px 16px; cursor: pointer; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; }
+        .list-item:active { background: #1c1c1e; }
+        .icon-wrapper { width: 40px; height: 40px; border-radius: 50%; background: #2c2c2e; display: flex; justify-content: center; align-items: center; margin-right: 12px; overflow: hidden; }
+        .icon-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Menü (Sidebar) */
+        .sidebar { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0b0b0b; z-index: 20; padding: 20px; display: flex; flex-direction: column; transition: transform 0.3s ease; transform: translateX(-100%); }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-item { display: flex; align-items: center; gap: 16px; padding: 16px 0; font-size: 1.1rem; font-weight: 500; cursor: pointer; }
+        .sidebar-item svg { width: 24px; height: 24px; color: #8e8e93; }
+        
+        /* Tabs in Erkunden */
+        .tabs { display: flex; gap: 8px; padding: 0 16px; margin-bottom: 16px; overflow-x: auto; }
+        .tab { background: #1c1c1e; border: none; color: #8e8e93; padding: 8px 16px; border-radius: 20px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+        .tab.active { background: #fff; color: #000; }
+
+        /* News Sektion */
+        .news-item { border-bottom: 1px solid #1c1c1e; padding: 16px 0; }
+        .news-tag { background: #1c1c1e; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; color: #8e8e93; margin-right: 8px; }
+    </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- SVG ICONS ---
+    const Icon = ({ name, size = 24, color = "currentColor" }) => {
+        useEffect(() => {
+            lucide.createIcons();
+        }, []);
+        return <i data-lucide={name} style={{ width: size, height: size, color: color }}></i>;
+    };
+
+    // --- MOCK DATA ---
+    const mockData = {
+        recently: [
+            { id: 1, name: 'HANTA', price: '$0.0000454', change: '-4.49%', mc: '$45K MC', isPositive: false, img: 'https://via.placeholder.com/40/30d158/ffffff?text=H' }
+        ],
+        popular: [
+            { id: 2, name: 'SPIKE', price: '$0.00242', change: '+24,640%', mc: '$2.4M MC', isPositive: true, img: 'https://via.placeholder.com/40/ff9f0a/ffffff?text=S' },
+            { id: 3, name: 'DUEL', price: '$0.00264', change: '+6,520%', mc: '$2.6M MC', isPositive: true, img: 'https://via.placeholder.com/40/ff453a/ffffff?text=D' },
+            { id: 4, name: 'GP', price: '$0.0278', change: '+177.2%', mc: '$27M MC', isPositive: true, img: 'https://via.placeholder.com/40/ffd60a/000000?text=G' },
+            { id: 5, name: 'ZEC', price: '$1,509.40', change: '0.00%', mc: '$20M MC', isPositive: true, img: 'https://via.placeholder.com/40/ffd60a/000000?text=Z' }
+        ],
+        trending: [
+            { id: 6, name: 'ENA', price: '$0.20', change: '-0.90%', mc: '$2.1B MC', isPositive: false, img: 'https://via.placeholder.com/40/fff/000?text=E' },
+            { id: 7, name: 'GP', price: '$0.0276', change: '+147.3%', mc: '$27M MC', isPositive: true, img: 'https://via.placeholder.com/40/ffd60a/000000?text=G' },
+            { id: 8, name: 'SPIKE', price: '$0.00251', change: '+475.3%', mc: '$2.5M MC', isPositive: true, img: 'https://via.placeholder.com/40/ff9f0a/ffffff?text=S' },
+            { id: 9, name: 'MUSEBOOK', price: '$0.000264', change: '-36.18%', mc: '$26M MC', isPositive: false, img: 'https://via.placeholder.com/40/fff/000?text=M' },
+            { id: 10, name: 'DUEL', price: '$0.00261', change: '+6,282%', mc: '$2.6M MC', isPositive: true, img: 'https://via.placeholder.com/40/ff453a/ffffff?text=D' }
+        ],
+        news: [
+            { id: 1, sources: '199 Quellen • 7h', title: 'Senate rejects CLARITY Act in 49-50 procedural vote, triggering $669.71 million in...', ticker: 'BTC', change: '-2.4%', isPositive: false },
+            { id: 2, sources: '29 Quellen • 3h', title: 'CME Group plans to launch Bitcoin Cash and Uniswap futures on October 19 as BCH surge...', ticker: 'BCH', change: '-2.4%', isPositive: false }
+        ]
+    };
+
+    // --- COMPONENTS ---
+    const TokenRow = ({ token }) => (
+        <div className="list-item">
+            <div className="flex items-center">
+                <div className="icon-wrapper">
+                    <img src={token.img} alt={token.name} />
+                </div>
+                <div className="flex flex-col">
+                    <span className="font-bold text-white text-lg">{token.name}</span>
+                    <span className="text-gray text-sm">{token.mc}</span>
+                </div>
+            </div>
+            <div className="flex flex-col items-end">
+                <span className="font-bold text-white text-lg">{token.price}</span>
+                <span className={token.isPositive ? "text-green text-sm" : "text-red text-sm"}>
+                    {token.change}
+                </span>
+            </div>
+        </div>
+    );
+
+    const Sidebar = ({ isOpen, onClose }) => (
+        <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+            <div className="flex justify-between items-center mb-8">
+                <div className="flex items-center gap-2">
+                    <div className="icon-wrapper" style={{ width: 30, height: 30 }}>
+                        <img src="https://via.placeholder.com/30/fff/000?text=W" alt="Wallet" />
+                    </div>
+                    <span className="font-bold">@RobinSchindler</span>
+                </div>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                    <Icon name="x" size={24} />
+                </button>
+            </div>
+            <div className="text-purple font-bold mb-8 flex items-center gap-2 text-sm">
+                <Icon name="twitter" size={16} /> Verbinden Sie Ihr X-Konto
+            </div>
+            
+            <div className="flex items-center gap-2 mb-8 p-2 rounded-xl bg-[#1c1c1e]">
+                <div className="w-6 h-6 rounded-full bg-[#2c2c2e] flex items-center justify-center text-xs font-bold">K1</div>
+                <span className="font-bold">Konto 1</span>
+                <Icon name="chevron-down" size={16} className="ml-auto text-gray" />
+            </div>
+
+            <div className="flex flex-col gap-4">
+                <div className="sidebar-item"><Icon name="user" /> Profil</div>
+                <div className="sidebar-item"><Icon name="message-square" /> Chats</div>
+                <div className="sidebar-item"><Icon name="heart" /> Watchlist</div>
+                <div className="sidebar-item"><Icon name="clock" /> Verlauf</div>
+            </div>
+
+            <div className="mt-auto flex flex-col gap-4 mb-8">
+                <div className="sidebar-item"><Icon name="settings" /> Einstellungen</div>
+                <div className="sidebar-item"><Icon name="info" /> Hilfe & Support</div>
+            </div>
+        </div>
+    );
+
+    const App = () => {
+        const [activeTab, setActiveTab] = useState('Start');
+        const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+        const [searchQuery, setSearchQuery] = useState('');
+
+        // Icons initialisieren
+        useEffect(() => {
+            lucide.createIcons();
+        }, [activeTab, isSidebarOpen]);
+
+        const renderContent = () => {
+            switch (activeTab) {
+                case 'Start':
+                    return (
+                        <div className="flex flex-col h-full">
+                            {/* Header */}
+                            <div className="flex justify-between items-center p-4">
+                                <div className="icon-wrapper" style={{ width: 32, height: 32 }} onClick={() => setIsSidebarOpen(true)}>
+                                    <img src="https://via.placeholder.com/32/fff/000?text=W" alt="Wallet" />
+                                </div>
+                                <div className="flex items-center gap-2 bg-[#1c1c1e] px-3 py-1 rounded-full text-sm font-bold">
+                                    <span>Konto 1</span>
+                                    <Icon name="chevron-down" size={14} />
+                                </div>
+                                <div className="icon-wrapper" style={{ width: 32, height: 32 }}>
+                                    <Icon name="scan" size={16} className="text-white" />
+                                </div>
+                            </div>
+
+                            {/* Balance */}
+                            <div className="px-4 mb-6">
+                                <div className="flex items-center gap-2 text-gray text-sm font-bold mb-1">
+                                    <span>Konto 1</span>
+                                    <Icon name="chevron-down" size={14} />
+                                </div>
+                                <div className="text-4xl font-bold mb-1">$3.65</div>
+                                <div className="text-red text-sm font-bold flex items-center gap-1">
+                                    <span>-$0.003735</span>
+                                    <span className="bg-[#ff453a] text-white px-1.5 py-0.5 rounded text-xs">-0.10%</span>
+                                </div>
+                            </div>
+
+                            {/* Cash & Token */}
+                            <div className="card flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    <Icon name="credit-card" className="text-gray" size={20} />
+                                    <span className="font-bold">Cash</span>
+                                </div>
+                                <span className="font-bold">&lt;$0.01</span>
+                            </div>
+
+                            <div className="px-4 mb-2 flex justify-between items-center mt-4">
+                                <span className="font-bold text-lg">Token</span>
+                                <Icon name="chevron-right" size={20} className="text-gray" />
+                            </div>
+                            
+                            <div className="card flex justify-between items-center">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex justify-center items-center">
+                                        <Icon name="layers" size={16} className="text-white" />
+                                    </div>
+                                    <div>
+                                        <div className="font-bold">Solana</div>
+                                        <div className="text-gray text-xs">0.00092 SOL</div>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="font-bold">$0.11</div>
+                                    <div className="text-red text-xs">-&lt;$0.01</div>
+                                </div>
+                            </div>
+
+                            {/* Perps */}
+                            <div className="px-4 mb-2 flex justify-between items-center mt-4">
+                                <span className="font-bold text-lg">Perps</span>
+                                <Icon name="chevron-right" size={20} className="text-gray" />
+                            </div>
+                            <div className="flex gap-4 px-4 overflow-x-auto pb-4">
+                                {['BTC 40x', 'ETH 25x', 'ZE'].map((item, i) => (
+                                    <div key={i} className="card flex-1 min-w-[100px] p-3 flex flex-col items-center">
+                                        <div className="w-10 h-10 rounded-full bg-[#2c2c2e] flex justify-center items-center mb-2">
+                                            <span className="font-bold text-sm">{item.split(' ')[0]}</span>
+                                        </div>
+                                        <span className="font-bold text-xs mb-1">{item}</span>
+                                        <span className="text-red text-xs">-2.49%</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Vorhersagen */}
+                            <div className="px-4 mb-2 flex justify-between items-center mt-4">
+                                <span className="font-bold text-lg">Vorhersagen</span>
+                                <Icon name="chevron-right" size={20} className="text-gray" />
+                            </div>
+                            {/* Search Bar */}
+                            <div className="search-bar">
+                                <Icon name="search" size={18} className="text-gray" />
+                                <input type="text" placeholder="Phantom durchsuchen" />
+                                <Icon name="x" size={18} className="text-gray cursor-pointer" />
+                            </div>
+                        </div>
+                    );
+
+                case 'Handel':
+                    return (
+                        <div className="flex flex-col h-full">
+                            <div className="px-4 py-2">
+                                <h1 className="text-3xl font-bold mb-1">Hot Markets</h1>
+                                <p className="text-gray text-sm flex items-center gap-1"><Icon name="user" size={12}/> Basierend auf Händleraktivität</p>
+                            </div>
+
+                            <div className="card bg-[#1c1c1e] p-4 flex flex-col gap-2 mx-4 mb-6">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-[#30d158] flex justify-center items-center">
+                                            <Icon name="activity" size={16} className="text-black" />
+                                        </div>
+                                        <span className="font-bold">xHYPE</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-bold">$2.73</div>
+                                        <div className="text-red text-xs">-7.65%</div>
+                                    </div>
+                                </div>
+                                <div className="w-full h-8 flex items-end justify-end">
+                                    {/* Fake Chart Line */}
+                                    <svg width="100" height="30" viewBox="0 0 100 30">
+                                        <path d="M0,20 L10,15 L20,25 L30,10 L40,15 L50,5 L60,20 L70,15 L80,25 L90,10 L100,20" fill="none" stroke="#ff453a" strokeWidth="2"/>
+                                    </svg>
+                                </div>
+                                <div className="text-gray text-xs flex items-center gap-1"><Icon name="arrow-up-right" size={12}/> 23.1k traders in 4h</div>
+                            </div>
+
+                            <div className="px-4 mb-4 flex justify-between items-center">
+                                <span className="font-bold text-xl">Explore Markets</span>
+                                <Icon name="chevron-right" size={20} className="text-gray" />
+                            </div>
+
+                            <div className="tabs">
+                                <button className="tab active">Trending</button>
+                                <button className="tab">Perps</button>
+                                <button className="tab">Robinhood Cha</button>
+                            </div>
+
+                            <div className="flex flex-col">
+                                {mockData.trending.map(token => <TokenRow key={token.id} token={token} />)}
+                            </div>
+                        </div>
+                    );
+
+                case 'Erkunden':
+                    return (
+                        <div className="flex flex-col h-full">
+                            <div className="tabs mt-2">
+                                <button className="tab active flex items-center gap-2"><Icon name="circle" size={14}/> Token</button>
+                                <button className="tab flex items-center gap-2"><Icon name="infinity" size={14}/> Perps</button>
+                                <button className="tab flex items-center gap-2"><Icon name="globe" size={14}/> Websites</button>
+                            </div>
+
+                            <div className="px-4 mb-4 flex justify-between items-center mt-2">
+                                <span className="font-bold text-xl">Beliebte Token</span>
+                                <Icon name="chevron-right" size={20} className="text-gray" />
+                            </div>
+
+                            <div className="flex flex-col mb-6">
+                                {mockData.popular.slice(0, 3).map(token => <TokenRow key={token.id} token={token} />)}
+                            </div>
+
+                            <div className="px-4 mb-4 flex justify-between items-center">
+                                <span className="font-bold text-xl">Was passiert</span>
+                                <Icon name="chevron-right" size={20} className="text-gray" />
+                            </div>
+
+                            <div className="px-4">
+                                {mockData.news.map(news => (
+                                    <div key={news.id} className="news-item">
+                                        <div className="text-gray text-xs mb-1">{news.sources}</div>
+                                        <div className="text-white text-sm font-medium mb-2">{news.title}</div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-white text-xs font-bold">{news.ticker}</span>
+                                            <span className={news.isPositive ? "text-green text-xs font-bold" : "text-red text-xs font-bold"}>{news.change}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    );
+
+                case 'Vorhersage':
+                    return <div className="p-4 flex justify-center items-center h-full text-gray">Vorhersage Ansicht</div>;
+                
+                default:
+                    return null;
+            }
+        };
+
+        return (
+            <div id="app-container">
+                {/* Status Bar Simulation */}
+                <div className="status-bar">
+                    <span>22:30</span>
+                    <div className="flex items-center gap-1">
+                        <Icon name="bell" size={14} />
+                        <Icon name="wifi" size={14} />
+                        <span className="bg-white text-black px-1 rounded text-xs font-bold">61</span>
+                    </div>
+                </div>
+
+                {/* Top Navigation */}
+                <div className="top-nav">
+                    {['Start', 'Handel', 'Vorhersage', 'Erkunden'].map(tab => (
+                        <button 
+                            key={tab} 
+                            className={`nav-btn ${activeTab === tab ? 'active' : ''}`}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Main Content Area */}
+                <div className="flex-grow overflow-y-auto pb-20">
+                    {renderContent()}
+                </div>
+
+                {/* Bottom Navigation */}
+                <div className="bottom-nav">
+                    <div className={`bottom-nav-item ${activeTab === 'Start' ? 'active' : ''}`} onClick={() => setActiveTab('Start')}>
+                        <Icon name="home" size={20} />
+                        <span>Start</span>
+                    </div>
+                    <div className={`bottom-nav-item ${activeTab === 'Handel' ? 'active' : ''}`} onClick={() => setActiveTab('Handel')}>
+                        <Icon name="bar-chart-2" size={20} />
+                        <span>Handel</span>
+                    </div>
+                    <div className={`bottom-nav-item ${activeTab === 'Erkunden' ? 'active' : ''}`} onClick={() => setActiveTab('Erkunden')}>
+                        <Icon name="compass" size={20} />
+                        <span>Erkunden</span>
+                    </div>
+                    <div className="bottom-nav-item" onClick={() => setIsSidebarOpen(true)}>
+                        <Icon name="user" size={20} />
+                        <span>Profil</span>
+                    </div>
+                </div>
+
+                {/* Sidebar Overlay */}
+                <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+            </div>
+        );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+
+</script>
+</body>
+</html>
+```
+
+Wie du es testest:
+
+1. Speichere den Code als index.html.
+2. Öffne die Datei in einem Browser (Chrome, Safari, etc.).
+3. Wichtig: Öffne die Entwicklertools (F12) und aktiviere die mobile Ansicht (Gerätesymbol), damit es wie ein Handy aussieht.
+
+Was habe ich umgesetzt?
+
+· Die Navigationsleiste oben: "Start", "Handel", "Vorhersage", "Erkunden" – klickbar, wechselt die Ansicht.
+· Das Design: Exakt der dunkle Hintergrund, die lila Akzente (#a78bfa), die runden Buttons und die Schriftarten.
+· Die Inhalte:
+  · Start: Der Kontostand, der "Cash"-Block, die Solana-Zeile und die Perps-Karten (BTC, ETH).
+  · Handel: Die "Hot Markets" Karte mit xHYPE und der gefälschten Chart-Linie, sowie die Token-Liste (ENA, GP, SPIKE).
+  · Erkunden: Die Tabs (Token, Perps, Websites), die beliebten Token und der "Was passiert"-Newsfeed.
+· Das Menü (Sidebar): Wenn du auf das Profilbild oben links oder unten rechts auf "Profil" klickst, öffnet sich das Menü mit "Profil", "Chats", "Watchlist", "Verlauf", "Einstellungen" und "Hilfe & Support".
+
+Was fehlt für eine echte 1:1 App?
+
+· Echte Blockchain-Daten: Die Preise ($3.65, SPIKE +24,640%) sind aktuell hart im Code einprogrammiert (Mock-Daten). In einer echten App müsste man die Solana RPC API oder CoinGecko API anbinden, um live Preise zu laden.
+· Echte Funktionalität: Man kann aktuell keine echten Transaktionen senden oder empfangen. Dafür bräuchte man eine Wallet-Bibliothek wie @solana/web3.js und eine sichere Schlüsselverwaltung (Keychain).
+· App-Store-Verpackung: Um es als echte App auf dem Handy zu installieren, müsste man den React-Code in React Native oder Flutter umschreiben und in Xcode/Android Studio kompilieren.
